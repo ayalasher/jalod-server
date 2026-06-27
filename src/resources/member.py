@@ -1,5 +1,5 @@
-# from flask.views import MethodView
-from flask_smorest import Blueprint
+from flask.views import MethodView
+from flask_smorest import Blueprint, abort
 
 from models.member import memberModel
 
@@ -23,3 +23,21 @@ class Members(MethodView):
             }
             for member in members
         ]
+
+
+@blp.route("/members/<int:member_id>")
+@blp.response(200, description="Get a member by ID")
+def get_member(member_id):
+    """Get a member by ID"""
+    member = memberModel.query.get(member_id)
+    if not member:
+        abort(404, message="Member not found")
+
+    return {
+        "id": member.id,
+        "name": member.name,
+        "email_address": member.email_address,
+        "phone_number": member.phone_number,
+        "birthday": member.birthday,
+        "age_group": member.age_group,
+    }
