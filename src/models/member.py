@@ -9,3 +9,5 @@ class memberModel(db.Model):
     phone_number = db.Column(db.Integer, nullable=True)
     birthday = db.Column(db.DateTime, nullable=True)
     age_group = db.Column(db.String(20), nullable=False)
+    total_contributions = db.Column(db.Numeric(10, 2), nullable=True)
+    contributions_predated = db.Column(db.DateTime, nullable=True)
