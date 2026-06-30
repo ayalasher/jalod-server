@@ -21,7 +21,6 @@ class Members(MethodView):
                 "email_address": member.email_address,
                 "phone_number": member.phone_number,
                 "birthday": member.birthday,
-                "age_group": member.age_group,
             }
             for member in members
         ]
@@ -38,7 +37,6 @@ def register_member():
         email_address=data.get("email_address"),
         phone_number=data.get("phone_number"),
         birthday=data.get("birthday"),
-        age_group=data.get("age_group"),
     )
 
     db.session.add(member)
@@ -50,7 +48,6 @@ def register_member():
         "email_address": member.email_address,
         "phone_number": member.phone_number,
         "birthday": member.birthday,
-        "age_group": member.age_group,
     }, 201
 
 
@@ -68,14 +65,13 @@ def get_member(member_id):
         "email_address": member.email_address,
         "phone_number": member.phone_number,
         "birthday": member.birthday,
-        "age_group": member.age_group,
     }
 
 
 @blp.route("/members/<int:member_id>", methods=["PUT"])
 @blp.response(200, description="Edit a member")
 def edit_member(member_id):
-    memberAttributes = ["name", "email_address", "phone_number", "birthday", "age_group"]
+    memberAttributes = ["name", "email_address", "phone_number", "birthday"]
     """Edit a member by ID"""
     member = memberModel.query.get(member_id)
     if not member:
@@ -93,7 +89,6 @@ def edit_member(member_id):
         "email_address": member.email_address,
         "phone_number": member.phone_number,
         "birthday": member.birthday,
-        "age_group": member.age_group,
     }
 
 
