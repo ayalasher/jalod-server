@@ -1,28 +1,43 @@
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 
 from flask import Flask
 from flask_smorest import Api
+from flask_jwt_extended import JWTManager
 
+from db import configure_database, db, ensure_member_auth_columns
+from resources.auth import blp as AuthBlueprint
 from resources.member import blp as MemberBlueprint
+
+load_dotenv()
 
 app = Flask(__name__)
 
-app.config['PROPAGATE_EXCEPTIONS'] = True
-app.config['API_TITLE'] = 'Jalod Server API'
-app.config['API_VERSION'] = 'v1'
-app.config['OPENAPI_VERSION'] = '3.0.3'
-app.config['OPENAPI_URL_PREFIX'] = '/'
-app.config['OPENAPI_SWAGGER_UI_PATH'] = '/swagger-ui'
-app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist/'
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["API_TITLE"] = "Jalod Server API"
+app.config["API_VERSION"] = "v1"
+app.config["OPENAPI_VERSION"] = "3.0.3"
+app.config["OPENAPI_URL_PREFIX"] = "/"
+app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
+app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-change-me")
 
+configure_database(app)
 api = Api(app)
 api.register_blueprint(MemberBlueprint)
+api.register_blueprint(AuthBlueprint)
+
+jwt = JWTManager(app)
+
+with app.app_context():
+    ensure_member_auth_columns(app)
+    db.create_all()
 
 
-@app.route('/')
+@app.route("/")
 def hello_world():
     return "Welcome to the Jalod Server App!"
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
