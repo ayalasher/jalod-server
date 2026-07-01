@@ -4,7 +4,8 @@ import os
 from flask import Flask
 from flask_smorest import Api
 
-from resources.member import blp as MemberBlueprint
+from resources.members import blp as MemberBlueprint
+from resources.contributions import blp as ContributionsBlueprint
 
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-
 
 api = Api(app)
 api.register_blueprint(MemberBlueprint)
+api.register_blueprint(ContributionsBlueprint)
 
 
 @app.route('/')
