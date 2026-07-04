@@ -8,7 +8,6 @@ from flask_jwt_extended import JWTManager
 
 from db import configure_database, db, ensure_member_auth_columns
 from resources.auth import blp as AuthBlueprint
-from resources.member import blp as MemberBlueprint
 from resources.members import blp as MemberBlueprint
 from resources.contributions import blp as ContributionsBlueprint
 

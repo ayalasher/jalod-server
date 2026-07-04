@@ -45,7 +45,13 @@ jalod-server/
 ### Database
 
 - **SQLAlchemy** (2.0.34+): Python SQL toolkit and Object-Relational Mapping (ORM)
-- Database engine: Not yet configured (currently uses SQLite by default, ready for PostgreSQL/MySQL migration)
+- **Neon Hosted PostgreSQL**: The backend is configured to connect to a Neon-managed Postgres database through environment variables
+
+### Database Connection Strategy
+
+The application now expects a PostgreSQL connection string from the environment. During startup, the backend reads `DATABASE_URL`, `NEON_DATABASE_URL`, or `POSTGRES_URL`, normalizes Neon-style URLs, and connects the Flask-SQLAlchemy layer to Postgres.
+
+If no database URL is provided, the app can fall back to SQLite for local-only development, but the intended setup is Neon Postgres.
 
 ### Development & Deployment
 
@@ -53,6 +59,97 @@ jalod-server/
 - **Docker** with slim Python image for containerization
 - **Rye** package manager (specified in pyproject.toml)
 - **python-dotenv** (1.0.1+): Environment variable management
+
+---
+
+## Neon PostgreSQL Setup
+
+This project is designed to run against a Neon hosted PostgreSQL database. The steps below describe how to create the Neon account, provision the database, and connect it to the backend.
+
+### 1. Create a Neon Account
+
+1. Go to [https://neon.tech](https://neon.tech).
+2. Sign up with your email, GitHub, or Google account.
+3. Verify your account if Neon prompts you to do so.
+4. After login, you will land in the Neon console where projects and databases are managed.
+
+### 2. Create a Neon Project and Database
+
+1. In the Neon console, create a new project.
+2. Choose a project name that matches this backend, for example `jalod-server`.
+3. Select the preferred region closest to your application or development environment.
+4. Neon creates the first Postgres database automatically inside the project.
+5. Open the project dashboard and locate the connection details or connection string.
+
+### 3. Copy the Database Connection String
+
+Neon provides a PostgreSQL connection URL in the project dashboard. It usually looks similar to this:
+
+```text
+postgres://USER:PASSWORD@HOST.neon.tech:5432/DB_NAME?sslmode=require&channelbinding=require
+```
+
+For this backend:
+
+- You can paste the Neon URL into `.env` as `DATABASE_URL`.
+- The application already normalizes `postgres://` to a SQLAlchemy-friendly form.
+- The backend also strips unsupported Neon query parameters such as `channelbinding`.
+- Keep `sslmode=require` in the URL because Neon requires SSL.
+
+### 4. Add the Connection String to `.env`
+
+Create or update the `.env` file in the project root with the following values:
+
+```env
+DATABASE_URL=postgres://USER:PASSWORD@HOST.neon.tech:5432/DB_NAME?sslmode=require
+JWT_SECRET_KEY=your-jwt-secret-key
+FLASK_APP=src/app.py
+FLASK_ENV=development
+DEBUG=True
+```
+
+Recommended notes:
+
+- Do not commit `.env` to source control.
+- Use the exact connection string Neon gives you, then let the app normalize it.
+- If you rotate your Neon password or recreate the database, update `DATABASE_URL` immediately.
+
+### 5. Restart the Backend After Updating `.env`
+
+The container or local Flask process must be restarted after changing the environment file.
+
+For Docker:
+
+```bash
+docker build -t jalod-api .
+docker run -p 5000:5000 jalod-api
+```
+
+If you are reusing an existing container, stop and remove it first before running a new one.
+
+### 6. What Happens on Startup
+
+When the app starts with a Neon connection:
+
+- Flask loads environment variables from `.env`.
+- SQLAlchemy connects to the Neon Postgres database.
+- The app creates tables if they do not exist yet.
+- Existing databases get schema adjustments for newer member columns used by authentication and contributions.
+
+### 7. Verify the Connection
+
+After the app starts, confirm the database is working by checking:
+
+1. `GET /` to confirm the Flask app is running.
+2. `GET /members` to verify member reads work.
+3. `POST /auth/signup` to confirm inserts are reaching Neon.
+
+If you see database errors, the most common causes are:
+
+- incorrect username or password in the Neon URL
+- a missing `sslmode=require`
+- a stale container that was not rebuilt after editing `.env`
+- the wrong database URL still being used by the container
 
 ---
 
@@ -160,8 +257,10 @@ app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-
 
 ### Environment
 
-- Uses `python-dotenv` for loading `.env` files (currently no `.env` file in repository)
-- Flask debug mode enabled in development
+- Uses `python-dotenv` for loading `.env` files
+- The backend reads `DATABASE_URL`, `NEON_DATABASE_URL`, or `POSTGRES_URL`
+- Flask debug mode is enabled in development
+- JWT auth uses `JWT_SECRET_KEY` from the environment
 
 ---
 

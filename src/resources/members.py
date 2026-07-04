@@ -1,6 +1,7 @@
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy import select
 
 from db import db
 from models.member import memberModel
@@ -13,7 +14,17 @@ class Members(MethodView):
     @blp.response(200, description="Get all members")
     def get(self):
         """Get all members"""
-        members = memberModel.query.all()
+        statement = select(
+            memberModel.id,
+            memberModel.name,
+            memberModel.email_address,
+            memberModel.phone_number,
+            memberModel.birthday,
+            memberModel.age_group,
+            memberModel.total_contributions,
+            memberModel.contributions_predated,
+        )
+        members = db.session.execute(statement).all()
         return [
             {
                 "id": member.id,
@@ -21,6 +32,9 @@ class Members(MethodView):
                 "email_address": member.email_address,
                 "phone_number": member.phone_number,
                 "birthday": member.birthday,
+                "age_group": member.age_group,
+                "total_contributions": member.total_contributions,
+                "contributions_predated": member.contributions_predated,
             }
             for member in members
         ]
@@ -54,7 +68,17 @@ class Member(MethodView):
     @blp.response(200, description="Get a member by ID")
     def get(self, member_id):
         """Get a member by ID"""
-        member = memberModel.query.get(member_id)
+        statement = select(
+            memberModel.id,
+            memberModel.name,
+            memberModel.email_address,
+            memberModel.phone_number,
+            memberModel.birthday,
+            memberModel.age_group,
+            memberModel.total_contributions,
+            memberModel.contributions_predated,
+        ).where(memberModel.id == member_id)
+        member = db.session.execute(statement).first()
         if not member:
             abort(404, message="Member not found")
 
@@ -64,6 +88,9 @@ class Member(MethodView):
             "email_address": member.email_address,
             "phone_number": member.phone_number,
             "birthday": member.birthday,
+            "age_group": member.age_group,
+            "total_contributions": member.total_contributions,
+            "contributions_predated": member.contributions_predated,
         }
 
     @blp.response(200, description="Edit a member")
