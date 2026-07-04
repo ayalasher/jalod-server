@@ -9,6 +9,8 @@ from flask_jwt_extended import JWTManager
 from db import configure_database, db, ensure_member_auth_columns
 from resources.auth import blp as AuthBlueprint
 from resources.member import blp as MemberBlueprint
+from resources.members import blp as MemberBlueprint
+from resources.contributions import blp as ContributionsBlueprint
 
 load_dotenv()
 
@@ -27,12 +29,14 @@ configure_database(app)
 api = Api(app)
 api.register_blueprint(MemberBlueprint)
 api.register_blueprint(AuthBlueprint)
+api.register_blueprint(ContributionsBlueprint)
 
 jwt = JWTManager(app)
 
 with app.app_context():
     ensure_member_auth_columns(app)
     db.create_all()
+
 
 
 @app.route("/")

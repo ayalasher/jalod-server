@@ -13,9 +13,14 @@ class memberModel(db.Model):
     total_contributions = db.Column(db.Numeric(10, 2), nullable=True)
     contributions_predated = db.Column(db.DateTime, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
+    contributions_tier = db.Column(db.Numeric(10, 2), nullable=True)
+    contributions_debt = db.Column(db.Numeric(10, 2), nullable=True)
+    loans_debt = db.Column(db.Numeric(10, 2), nullable=True)
+    contributions_dated_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
+   
