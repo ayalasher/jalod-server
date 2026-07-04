@@ -61,15 +61,29 @@ def ensure_member_auth_columns(app):
         if "Members" not in inspector.get_table_names():
             return
 
-        column_names = {column["name"] for column in inspector.get_columns("Members")}
-        if "password_hash" in column_names:
-            return
+        existing_columns = {column["name"] for column in inspector.get_columns("Members")}
 
         with db.engine.begin() as connection:
-            connection.execute(text('ALTER TABLE "Members" ADD COLUMN password_hash VARCHAR(255)'))
+            if "password_hash" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN password_hash VARCHAR(255)'))
 
-            if db.engine.dialect.name == "postgresql":
+            if "contributions_tier" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN contributions_tier NUMERIC(10, 2)'))
+
+            if "contributions_debt" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN contributions_debt NUMERIC(10, 2)'))
+
+            if "loans_debt" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN loans_debt NUMERIC(10, 2)'))
+
+            if "contributions_dated_at" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN contributions_dated_at TIMESTAMP'))
+
+            if db.engine.dialect.name == "postgresql" and "password_hash" not in existing_columns:
                 connection.execute(text('UPDATE "Members" SET password_hash = \'\' WHERE password_hash IS NULL'))
                 connection.execute(text('ALTER TABLE "Members" ALTER COLUMN password_hash SET DEFAULT \'\''))
                 connection.execute(text('ALTER TABLE "Members" ALTER COLUMN password_hash SET NOT NULL'))
+
+            if db.engine.dialect.name == "postgresql":
+                connection.execute(text('ALTER TABLE "Members" ALTER COLUMN age_group DROP NOT NULL'))
                 connection.execute(text('ALTER TABLE "Members" ALTER COLUMN age_group DROP NOT NULL'))
