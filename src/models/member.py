@@ -1,4 +1,7 @@
-from db import db
+try:
+    from ..db import db
+except ImportError:  # pragma: no cover - allows running from src directory
+    from db import db
 from werkzeug.security import check_password_hash, generate_password_hash
 
 class memberModel(db.Model):

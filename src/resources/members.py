@@ -1,118 +1,59 @@
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from sqlalchemy import select
 
-from db import db
-from models.member import memberModel
+try:
+    from ..db import db
+    from ..models.member import memberModel
+    from ..schemas.member import MemberCreateSchema, MemberSchema, MemberUpdateSchema
+except ImportError:  # pragma: no cover - allows running from src directory
+    from db import db
+    from models.member import memberModel
+    from schemas.member import MemberCreateSchema, MemberSchema, MemberUpdateSchema
 
 blp = Blueprint("members", __name__, description="Operations on members")
 
 
 @blp.route("/members")
 class Members(MethodView):
-    @blp.response(200, description="Get all members")
+    @blp.response(200, schema=MemberSchema(many=True), description="Get all members")
     def get(self):
         """Get all members"""
-        statement = select(
-            memberModel.id,
-            memberModel.name,
-            memberModel.email_address,
-            memberModel.phone_number,
-            memberModel.birthday,
-            memberModel.age_group,
-            memberModel.total_contributions,
-            memberModel.contributions_predated,
-        )
-        members = db.session.execute(statement).all()
-        return [
-            {
-                "id": member.id,
-                "name": member.name,
-                "email_address": member.email_address,
-                "phone_number": member.phone_number,
-                "birthday": member.birthday,
-                "age_group": member.age_group,
-                "total_contributions": member.total_contributions,
-                "contributions_predated": member.contributions_predated,
-            }
-            for member in members
-        ]
+        return memberModel.query.all()
 
-    @blp.response(201, description="Register a member")
-    def post(self):
+    @blp.arguments(MemberCreateSchema, location="json")
+    @blp.response(201, schema=MemberSchema, description="Register a member")
+    def post(self, payload):
         """Register a new member"""
-        data = request.get_json() or {}
-
-        member = memberModel(
-            name=data.get("name"),
-            email_address=data.get("email_address"),
-            phone_number=data.get("phone_number"),
-            birthday=data.get("birthday"),
-        )
+        member = MemberSchema().load(payload, session=db.session)
 
         db.session.add(member)
         db.session.commit()
 
-        return {
-            "id": member.id,
-            "name": member.name,
-            "email_address": member.email_address,
-            "phone_number": member.phone_number,
-            "birthday": member.birthday,
-        }, 201
+        return member, 201
 
 
 @blp.route("/members/<int:member_id>")
 class Member(MethodView):
-    @blp.response(200, description="Get a member by ID")
+    @blp.response(200, schema=MemberSchema, description="Get a member by ID")
     def get(self, member_id):
         """Get a member by ID"""
-        statement = select(
-            memberModel.id,
-            memberModel.name,
-            memberModel.email_address,
-            memberModel.phone_number,
-            memberModel.birthday,
-            memberModel.age_group,
-            memberModel.total_contributions,
-            memberModel.contributions_predated,
-        ).where(memberModel.id == member_id)
-        member = db.session.execute(statement).first()
+        member = memberModel.query.get(member_id)
         if not member:
             abort(404, message="Member not found")
 
-        return {
-            "id": member.id,
-            "name": member.name,
-            "email_address": member.email_address,
-            "phone_number": member.phone_number,
-            "birthday": member.birthday,
-            "age_group": member.age_group,
-            "total_contributions": member.total_contributions,
-            "contributions_predated": member.contributions_predated,
-        }
+        return member
 
-    @blp.response(200, description="Edit a member")
-    def put(self, member_id):
+    @blp.arguments(MemberUpdateSchema, location="json")
+    @blp.response(200, schema=MemberSchema, description="Edit a member")
+    def put(self, payload, member_id):
         """Edit a member by ID"""
         member = memberModel.query.get(member_id)
         if not member:
             abort(404, message="Member not found")
 
-        data = request.get_json() or {}
-        for field in ["name", "email_address", "phone_number", "birthday"]:
-            if field in data:
-                setattr(member, field, data[field])
-
+        member = MemberSchema().load(payload, instance=member, partial=True, session=db.session)
         db.session.commit()
-        return {
-            "id": member.id,
-            "name": member.name,
-            "email_address": member.email_address,
-            "phone_number": member.phone_number,
-            "birthday": member.birthday,
-        }
+        return member
 
     @blp.response(204, description="Delete a member")
     def delete(self, member_id):

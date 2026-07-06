@@ -6,10 +6,18 @@ from flask import Flask
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 
-from db import configure_database, db, ensure_member_auth_columns
-from resources.auth import blp as AuthBlueprint
-from resources.members import blp as MemberBlueprint
-from resources.contributions import blp as ContributionsBlueprint
+try:
+    from .db import configure_database, db, ensure_member_auth_columns
+    from .resources.auth import blp as AuthBlueprint
+    from .resources.members import blp as MemberBlueprint
+    from .resources.contributions import blp as ContributionsBlueprint
+    from .schemas import ma
+except ImportError:  # pragma: no cover - allows running app.py directly
+    from db import configure_database, db, ensure_member_auth_columns
+    from resources.auth import blp as AuthBlueprint
+    from resources.members import blp as MemberBlueprint
+    from resources.contributions import blp as ContributionsBlueprint
+    from schemas import ma
 
 load_dotenv()
 
@@ -25,6 +33,7 @@ app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-change-me")
 
 configure_database(app)
+ma.init_app(app)
 api = Api(app)
 api.register_blueprint(MemberBlueprint)
 api.register_blueprint(AuthBlueprint)

@@ -2,9 +2,14 @@ from flask.views import MethodView
 from flask_jwt_extended import create_access_token
 from flask_smorest import Blueprint, abort
 
-from models.member import memberModel
-from db import db
-from schemas.auth import AuthResponseSchema, LoginRequestSchema, SignupRequestSchema
+try:
+    from ..models.member import memberModel
+    from ..db import db
+    from ..schemas.auth import AuthResponseSchema, LoginRequestSchema, SignupRequestSchema
+except ImportError:  # pragma: no cover - allows running from src directory
+    from models.member import memberModel
+    from db import db
+    from schemas.auth import AuthResponseSchema, LoginRequestSchema, SignupRequestSchema
 
 
 blp = Blueprint("auth", __name__, description="Authentication operations")

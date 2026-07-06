@@ -24,7 +24,7 @@ jalod-server/
 │   ├── models/
 │   │   └── member.py             # SQLAlchemy ORM model for Member entity
 │   └── resources/
-│       └── member.py             # Flask-smorest Blueprint with Member API endpoints
+│       └── members.py             # Flask-smorest Blueprint with Member API endpoints
 ├── Dockerfile                    # Docker container configuration for Python 3.12
 ├── docker-compose.yml            # Docker Compose configuration for local development
 ├── pyproject.toml                # Project metadata and dependencies (Rye-based)
