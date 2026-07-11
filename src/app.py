@@ -11,13 +11,17 @@ try:
     from .resources.auth import blp as AuthBlueprint
     from .resources.members import blp as MemberBlueprint
     from .resources.contributions import blp as ContributionsBlueprint
+    from .resources.welfare import blp as WelfareBlueprint
     from .schemas import ma
+    from .models.welfare import WelfareModel
 except ImportError:  # pragma: no cover - allows running app.py directly
     from db import configure_database, db, ensure_member_auth_columns
     from resources.auth import blp as AuthBlueprint
     from resources.members import blp as MemberBlueprint
     from resources.contributions import blp as ContributionsBlueprint
+    from resources.welfare import blp as WelfareBlueprint
     from schemas import ma
+    from models.welfare import WelfareModel
 
 load_dotenv()
 
@@ -38,6 +42,7 @@ api = Api(app)
 api.register_blueprint(MemberBlueprint)
 api.register_blueprint(AuthBlueprint)
 api.register_blueprint(ContributionsBlueprint)
+api.register_blueprint(WelfareBlueprint)
 
 jwt = JWTManager(app)
 
