@@ -42,3 +42,9 @@ class MemberUpdateSchema(Schema):
     email_address = fields.Email(validate=validate.Length(max=40))
     phone_number = fields.Integer()
     birthday = fields.DateTime(allow_none=True)
+
+
+class BirthdaySchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.String(required=True)
+    birthday = fields.DateTime(allow_none=True)

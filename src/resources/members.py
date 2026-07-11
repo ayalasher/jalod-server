@@ -4,11 +4,11 @@ from flask_smorest import Blueprint, abort
 try:
     from ..db import db
     from ..models.member import memberModel
-    from ..schemas.member import MemberCreateSchema, MemberSchema, MemberUpdateSchema
+    from ..schemas.member import BirthdaySchema, MemberCreateSchema, MemberSchema, MemberUpdateSchema
 except ImportError:  # pragma: no cover - allows running from src directory
     from db import db
     from models.member import memberModel
-    from schemas.member import MemberCreateSchema, MemberSchema, MemberUpdateSchema
+    from schemas.member import BirthdaySchema, MemberCreateSchema, MemberSchema, MemberUpdateSchema
 
 blp = Blueprint("members", __name__, description="Operations on members")
 
@@ -30,6 +30,27 @@ class Members(MethodView):
         db.session.commit()
 
         return member, 201
+
+
+@blp.route("/members/birthdays")
+class MemberBirthdays(MethodView):
+    @blp.response(200, schema=BirthdaySchema(many=True), description="Get all member birthdays")
+    def get(self):
+        """Get all member birthdays"""
+        birthdays = (
+            memberModel.query.filter(memberModel.birthday.isnot(None))
+            .order_by(memberModel.birthday.asc())
+            .all()
+        )
+
+        return [
+            {
+                "id": member.id,
+                "name": member.name,
+                "birthday": member.birthday,
+            }
+            for member in birthdays
+        ]
 
 
 @blp.route("/members/<int:member_id>")
