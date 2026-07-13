@@ -83,4 +83,7 @@ class Member(MethodView):
         if not member:
             abort(404, message="Member not found")
 
-        return f"Member {member.name} deleted", 204
+        db.session.delete(member)
+        db.session.commit()
+
+        return f"Member deleted {member.name}", 204

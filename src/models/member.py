@@ -15,7 +15,7 @@ class memberModel(db.Model):
     age_group = db.Column(db.String(20), nullable=True)
     total_contributions = db.Column(db.Numeric(10, 2), nullable=True)
     contributions_predated = db.Column(db.DateTime, nullable=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False, default="")
     contributions_tier = db.Column(db.Numeric(10, 2), nullable=True)
     contributions_debt = db.Column(db.Numeric(10, 2), nullable=True)
     loans_debt = db.Column(db.Numeric(10, 2), nullable=True)
