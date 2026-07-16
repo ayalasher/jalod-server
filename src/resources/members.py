@@ -1,4 +1,5 @@
 from flask.views import MethodView
+from flask_jwt_extended import jwt_required
 from flask_smorest import Blueprint, abort
 
 try:
@@ -16,6 +17,7 @@ blp = Blueprint("members", __name__, description="Operations on members")
 @blp.route("/members")
 class Members(MethodView):
     @blp.response(200, schema=MemberSchema(many=True), description="Get all members")
+    @jwt_required()
     def get(self):
         """Get all members"""
         return memberModel.query.all()
@@ -35,6 +37,7 @@ class Members(MethodView):
 @blp.route("/members/birthdays")
 class MemberBirthdays(MethodView):
     @blp.response(200, schema=BirthdaySchema(many=True), description="Get all member birthdays")
+    @jwt_required()
     def get(self):
         """Get all member birthdays"""
         birthdays = (
@@ -77,6 +80,7 @@ class Member(MethodView):
         return member
 
     @blp.response(204, description="Delete a member")
+    @jwt_required()
     def delete(self, member_id):
         """Delete a member by ID"""
         member = memberModel.query.get(member_id)

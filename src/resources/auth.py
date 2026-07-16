@@ -58,7 +58,10 @@ class SignUp(MethodView):
         db.session.add(member)
         db.session.commit()
 
-        token = create_access_token(identity=str(member.id), additional_claims={"name": member.name})
+        token = create_access_token(
+            identity=str(member.id),
+            additional_claims={"name": member.name, "role": member.role},
+        )
         return {
             "message": "Signup successful",
             "access_token": token,
@@ -67,6 +70,7 @@ class SignUp(MethodView):
                 "name": member.name,
                 "email_address": member.email_address,
                 "phone_number": member.phone_number,
+                "role": member.role,
             },
         }, 201
 
@@ -83,7 +87,10 @@ class Login(MethodView):
         if not member or not member.check_password(password):
             abort(401, message="Invalid credentials")
 
-        token = create_access_token(identity=str(member.id), additional_claims={"name": member.name})
+        token = create_access_token(
+            identity=str(member.id),
+            additional_claims={"name": member.name, "role": member.role},
+        )
         return {
             "message": "Login successful",
             "access_token": token,
@@ -92,5 +99,6 @@ class Login(MethodView):
                 "name": member.name,
                 "email_address": member.email_address,
                 "phone_number": member.phone_number,
+                "role": member.role,
             },
         }, 200

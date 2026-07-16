@@ -11,6 +11,7 @@ class MemberSummarySchema(ma.Schema):
     name = fields.Str(dump_only=True)
     email_address = fields.Str(dump_only=True)
     phone_number = fields.Int(dump_only=True)
+    role = fields.Str(dump_only=True)
 
 
 class SignupRequestSchema(ma.Schema):

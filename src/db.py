@@ -79,6 +79,9 @@ def ensure_member_auth_columns(app):
             if "contributions_dated_at" not in existing_columns:
                 connection.execute(text('ALTER TABLE "Members" ADD COLUMN contributions_dated_at TIMESTAMP'))
 
+            if "role" not in existing_columns:
+                connection.execute(text('ALTER TABLE "Members" ADD COLUMN role VARCHAR(10) NOT NULL DEFAULT \'user\''))
+
             if db.engine.dialect.name == "postgresql" and "password_hash" not in existing_columns:
                 connection.execute(text('UPDATE "Members" SET password_hash = \'\' WHERE password_hash IS NULL'))
                 connection.execute(text('ALTER TABLE "Members" ALTER COLUMN password_hash SET DEFAULT \'\''))

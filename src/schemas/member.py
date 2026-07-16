@@ -24,6 +24,8 @@ class MemberSchema(SQLAlchemyAutoSchema):
             "contributions_dated_at",
         )
 
+    role = fields.String(validate=validate.OneOf([memberModel.ADMIN_ROLE, memberModel.USER_ROLE]))
+
     name = fields.String(required=True, validate=validate.Length(min=2, max=40))
     email_address = fields.Email(required=True, validate=validate.Length(max=40))
     phone_number = fields.Integer(required=True)

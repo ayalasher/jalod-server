@@ -20,6 +20,12 @@ class memberModel(db.Model):
     contributions_debt = db.Column(db.Numeric(10, 2), nullable=True)
     loans_debt = db.Column(db.Numeric(10, 2), nullable=True)
     contributions_dated_at = db.Column(db.DateTime, nullable=True)
+    ADMIN_ROLE = "admin"
+    USER_ROLE = "user"
+    role = db.Column(db.String(10), nullable=False, default=USER_ROLE, server_default=USER_ROLE)
+
+    def is_admin(self) -> bool:
+        return self.role == self.ADMIN_ROLE
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
