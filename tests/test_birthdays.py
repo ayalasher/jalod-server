@@ -5,27 +5,20 @@ from datetime import datetime
 import pytest
 
 
-@pytest.fixture()
-def client(tmp_path):
-    db_path = tmp_path / "test.db"
-    os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
-
-    import src.app as app_module
-
-    importlib.reload(app_module)
-    app_module.app.config.update(TESTING=True)
-
-    with app_module.app.app_context():
-        app_module.db.drop_all()
-        app_module.db.create_all()
-        yield app_module.app.test_client()
-        app_module.db.session.remove()
-        app_module.db.drop_all()
-
-
 def test_fetch_all_birthdays(client):
     import src.app as app_module
     from src.models.member import memberModel
+
+    signup_payload = {
+        "name": "AuthUser",
+        "email_address": "authuser@example.com",
+        "phone_number": 111222333,
+        "password": "password123",
+    }
+    signup_response = client.post("/auth/signup", json=signup_payload)
+    assert signup_response.status_code == 201
+    token = signup_response.get_json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
 
     with app_module.app.app_context():
         member = memberModel(
@@ -38,7 +31,7 @@ def test_fetch_all_birthdays(client):
         app_module.db.session.add(member)
         app_module.db.session.commit()
 
-    response = client.get("/members/birthdays")
+    response = client.get("/members/birthdays", headers=headers)
 
     assert response.status_code == 200
     payload = response.get_json()
