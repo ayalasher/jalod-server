@@ -23,6 +23,10 @@ except ImportError:  # pragma: no cover - allows running app.py directly
     from schemas import ma
     from models.welfare import WelfareModel
 
+# Ensure Flask-specific environment in `.flaskenv` is loaded during tests
+# and when the app is created programmatically. Some environments (pytest)
+# may not load .flaskenv automatically, so load it explicitly first.
+load_dotenv(".flaskenv", override=True)
 load_dotenv()
 
 app = Flask(__name__)

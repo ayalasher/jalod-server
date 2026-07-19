@@ -54,8 +54,11 @@ def test_member_crud_flow(client):
     delete_response = client.delete(f"/members/{created_member['id']}", headers=headers)
     assert delete_response.status_code == 204
 
+    from src.db import db as _db
+
     with app_module.app.app_context():
-        assert memberModel.query.get(created_member["id"]) is None
+        # Use Session.get() to avoid SQLAlchemy legacy Query.get() in tests.
+        assert _db.session.get(memberModel, created_member["id"]) is None
 
 
 def test_member_default_role_is_user(client):
@@ -74,8 +77,10 @@ def test_member_default_role_is_user(client):
     created_member = signup_response.get_json()["member"]
     assert created_member["role"] == memberModel.USER_ROLE
 
+    from src.db import db as _db
+
     with app_module.app.app_context():
-        member = memberModel.query.get(created_member["id"])
+        member = _db.session.get(memberModel, created_member["id"])
         assert member is not None
         assert member.role == memberModel.USER_ROLE
         assert not member.is_admin()

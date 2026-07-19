@@ -6,6 +6,10 @@ blp = Blueprint("treasury", __name__, description="Operations on treasury")
 
 
 def _ensure_admin():
+    """Abort with 403 unless the requester has the `admin` role in their JWT.
+
+    This is a tiny convenience helper used by administrative endpoints.
+    """
     claims = get_jwt()
     if claims.get("role") != "admin":
         abort(403, message="Admin privileges required")

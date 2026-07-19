@@ -15,6 +15,10 @@ except ImportError:  # pragma: no cover - allows running from src directory
 blp = Blueprint("auth", __name__, description="Authentication operations")
 
 
+# Authentication endpoints: signup and login. These create JWT access tokens
+# including a `role` claim so resource-level checks can authorize requests.
+
+
 def _parse_phone_number(value):
     if value is None:
         return None

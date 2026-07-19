@@ -24,6 +24,7 @@ class MemberSchema(SQLAlchemyAutoSchema):
             "contributions_dated_at",
         )
 
+    # Expose role in serialized member objects and validate accepted values.
     role = fields.String(validate=validate.OneOf([memberModel.ADMIN_ROLE, memberModel.USER_ROLE]))
 
     name = fields.String(required=True, validate=validate.Length(min=2, max=40))

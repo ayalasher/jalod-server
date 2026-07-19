@@ -14,6 +14,11 @@ except ImportError:  # pragma: no cover - allows running from src directory
 blp = Blueprint("members", __name__, description="Operations on members")
 
 
+# Members resource: exposes CRUD for member records. Some endpoints are
+# intentionally public (create/get/update) while others (list/delete) are
+# protected by JWT to limit access to authenticated callers.
+
+
 @blp.route("/members")
 class Members(MethodView):
     @blp.response(200, schema=MemberSchema(many=True), description="Get all members")
@@ -61,7 +66,8 @@ class Member(MethodView):
     @blp.response(200, schema=MemberSchema, description="Get a member by ID")
     def get(self, member_id):
         """Get a member by ID"""
-        member = memberModel.query.get(member_id)
+        # Use Session.get() to avoid SQLAlchemy Query.get() legacy API.
+        member = db.session.get(memberModel, member_id)
         if not member:
             abort(404, message="Member not found")
 
@@ -71,7 +77,8 @@ class Member(MethodView):
     @blp.response(200, schema=MemberSchema, description="Edit a member")
     def put(self, payload, member_id):
         """Edit a member by ID"""
-        member = memberModel.query.get(member_id)
+        # Use Session.get() rather than the legacy Query.get().
+        member = db.session.get(memberModel, member_id)
         if not member:
             abort(404, message="Member not found")
 
@@ -83,7 +90,8 @@ class Member(MethodView):
     @jwt_required()
     def delete(self, member_id):
         """Delete a member by ID"""
-        member = memberModel.query.get(member_id)
+        # Use Session.get() rather than the legacy Query.get().
+        member = db.session.get(memberModel, member_id)
         if not member:
             abort(404, message="Member not found")
 
