@@ -49,8 +49,7 @@ class WelfareEvent(MethodView):
     @blp.response(200, schema=WelfareSchema, description="Get a welfare event by ID")
     def get(self, event_id):
         """Get a welfare event by ID"""
-        # Use Session.get() to avoid SQLAlchemy Query.get() legacy API.
-        welfare = db.session.get(WelfareModel, event_id)
+        welfare = WelfareModel.query.get(event_id)
         if not welfare:
             abort(404, message="Welfare event not found")
 
@@ -62,8 +61,7 @@ class WelfareEvent(MethodView):
     @jwt_required()
     def put(self, payload, event_id):
         """Edit a welfare event by ID"""
-        # Use Session.get() rather than the legacy Query.get().
-        welfare = db.session.get(WelfareModel, event_id)
+        welfare = WelfareModel.query.get(event_id)
         if not welfare:
             abort(404, message="Welfare event not found")
 
@@ -76,8 +74,7 @@ class WelfareEvent(MethodView):
     @jwt_required()
     def delete(self, event_id):
         """Delete a welfare event by ID"""
-        # Use Session.get() rather than the legacy Query.get().
-        welfare = db.session.get(WelfareModel, event_id)
+        welfare = WelfareModel.query.get(event_id)
         if not welfare:
             abort(404, message="Welfare event not found")
 

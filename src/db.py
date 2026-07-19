@@ -2,6 +2,7 @@ import os
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from sqlalchemy import inspect, text
+from sqlalchemy.pool import NullPool
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -51,12 +52,20 @@ def configure_database(app):
 
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    # Tweak SQLAlchemy engine options to be resilient in production.
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_size": 10,
-        "pool_recycle": 3600,
-        "pool_pre_ping": True,
-    }
+    # Choose sane engine options depending on the database type. For SQLite
+    # (used in tests), prefer NullPool so connections are not retained in a
+    # pool and are closed immediately when no longer needed. For other DBs
+    # (e.g., Postgres) use a reused pool with pre-ping enabled for resilience.
+    if database_url.startswith("sqlite:"):
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": NullPool,
+        }
+    else:
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_size": 10,
+            "pool_recycle": 3600,
+            "pool_pre_ping": True,
+        }
 
     db.init_app(app)
 

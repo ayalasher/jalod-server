@@ -66,8 +66,7 @@ class Member(MethodView):
     @blp.response(200, schema=MemberSchema, description="Get a member by ID")
     def get(self, member_id):
         """Get a member by ID"""
-        # Use Session.get() to avoid SQLAlchemy Query.get() legacy API.
-        member = db.session.get(memberModel, member_id)
+        member = memberModel.query.get(member_id)
         if not member:
             abort(404, message="Member not found")
 
@@ -77,8 +76,7 @@ class Member(MethodView):
     @blp.response(200, schema=MemberSchema, description="Edit a member")
     def put(self, payload, member_id):
         """Edit a member by ID"""
-        # Use Session.get() rather than the legacy Query.get().
-        member = db.session.get(memberModel, member_id)
+        member = memberModel.query.get(member_id)
         if not member:
             abort(404, message="Member not found")
 
@@ -90,8 +88,7 @@ class Member(MethodView):
     @jwt_required()
     def delete(self, member_id):
         """Delete a member by ID"""
-        # Use Session.get() rather than the legacy Query.get().
-        member = db.session.get(memberModel, member_id)
+        member = memberModel.query.get(member_id)
         if not member:
             abort(404, message="Member not found")
 
