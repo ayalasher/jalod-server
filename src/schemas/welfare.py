@@ -4,9 +4,11 @@ from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 try:
     from ..db import db
     from ..models.welfare import WelfareModel
+    from .member import BirthdaySchema
 except ImportError:  # pragma: no cover - allows running from src directory
     from db import db
     from models.welfare import WelfareModel
+    from schemas.member import BirthdaySchema
 
 
 class WelfareSchema(SQLAlchemyAutoSchema):
@@ -39,3 +41,9 @@ class WelfareUpdateSchema(Schema):
     description = fields.String(allow_none=True)
     amount_spent = fields.Decimal(allow_none=True)
     status = fields.String(validate=validate.OneOf(["Done", "Not Completed"]))
+
+
+class WelfareMonthResponseSchema(Schema):
+    """Response schema for welfare events + birthdays in a month."""
+    events = fields.List(fields.Nested(WelfareSchema))
+    birthdays = fields.List(fields.Nested(BirthdaySchema))
