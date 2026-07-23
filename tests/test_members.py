@@ -86,6 +86,48 @@ def test_member_default_role_is_user(client):
         assert not member.is_admin()
 
 
+def test_member_contributions_relationship(client):
+    import src.app as app_module
+    from src.models.contribution import ContributionModel
+    from src.models.member import memberModel
+
+    create_response = client.post(
+        "/members",
+        json={
+            "name": "ContribTest",
+            "email_address": "contribtest@example.com",
+            "phone_number": 123123123,
+            "birthday": "1995-05-05T00:00:00",
+        },
+    )
+    assert create_response.status_code == 201
+    member_data = create_response.get_json()
+
+    with app_module.app.app_context():
+        member = app_module.db.session.get(memberModel, member_data["id"])
+        assert member is not None
+
+        contribution_cash = ContributionModel(
+            member_id=member.id,
+            amount=50.00,
+            date=datetime(2026, 7, 1),
+            type="cash",
+        )
+        contribution_bank = ContributionModel(
+            member_id=member.id,
+            amount=150.00,
+            date=datetime(2026, 7, 2),
+            type="bank",
+        )
+        app_module.db.session.add_all([contribution_cash, contribution_bank])
+        app_module.db.session.commit()
+
+        member = app_module.db.session.get(memberModel, member.id)
+        assert len(member.contributions) == 2
+        assert {contribution.type for contribution in member.contributions} == {"cash", "bank"}
+        assert all(contribution.member is member for contribution in member.contributions)
+
+
 def test_members_require_authentication_for_list_and_delete(client):
     response = client.get("/members")
     assert response.status_code == 401

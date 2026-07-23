@@ -1,7 +1,9 @@
 try:
     from ..db import db
+    from .contribution import ContributionModel
 except ImportError:  # pragma: no cover - allows running from src directory
     from db import db
+    from contribution import ContributionModel
 from werkzeug.security import check_password_hash, generate_password_hash
 
 class memberModel(db.Model):
@@ -27,6 +29,12 @@ class memberModel(db.Model):
     contributions_debt = db.Column(db.Numeric(10, 2), nullable=True)
     loans_debt = db.Column(db.Numeric(10, 2), nullable=True)
     contributions_dated_at = db.Column(db.DateTime, nullable=True)
+    contributions = db.relationship(
+        "ContributionModel",
+        back_populates="member",
+        cascade="all, delete-orphan",
+    )
+
     # Simple role constants to avoid magic strings throughout the codebase.
     ADMIN_ROLE = "admin"
     USER_ROLE = "user"

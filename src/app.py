@@ -14,6 +14,7 @@ try:
     from .resources.welfare import blp as WelfareBlueprint
     from .schemas import ma
     from .models.welfare import WelfareModel
+    from .models.contribution import ContributionModel
 except ImportError:  # pragma: no cover - allows running app.py directly
     from db import configure_database, db, ensure_member_auth_columns
     from resources.auth import blp as AuthBlueprint
@@ -22,6 +23,7 @@ except ImportError:  # pragma: no cover - allows running app.py directly
     from resources.welfare import blp as WelfareBlueprint
     from schemas import ma
     from models.welfare import WelfareModel
+    from models.contribution import ContributionModel
 
 # Ensure Flask-specific environment in `.flaskenv` is loaded during tests
 # and when the app is created programmatically. Some environments (pytest)
